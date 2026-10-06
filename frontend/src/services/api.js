@@ -1,11 +1,14 @@
+
 // ============================================================
 // API BASE URL
 // ============================================================
-
 const getApiBaseUrl = () => {
   // Local development
   // Vite runs on port 3000 and proxies /api to Flask
-  if (typeof window !== 'undefined' && window.location.port === '3000') {
+  if (
+    typeof window !== 'undefined' &&
+    window.location.port === '3000'
+  ) {
     return '/api';
   }
 
@@ -32,8 +35,6 @@ export async function fetchDatasetSummary() {
   return await res.json();
 }
 
-
-// Alias used by other components if needed
 export const getDatasetSummary = fetchDatasetSummary;
 
 
@@ -58,8 +59,6 @@ export async function uploadCSVFile(file) {
   return await res.json();
 }
 
-
-// Alias
 export const uploadDataset = uploadCSVFile;
 
 
@@ -104,14 +103,19 @@ export async function cleanDataset() {
   return await res.json();
 }
 
-
-// Alias
 export const cleanData = cleanDataset;
 
 
 // ============================================================
 // STOCK ANALYSIS
 // ============================================================
+//
+// IMPORTANT:
+// This function is kept for pages that already use
+// analyzeStocks(selectedStocks).
+//
+// It sends selected_stocks as an array.
+//
 
 export async function analyzeStocks(selectedStocks = []) {
   const res = await fetch(`${API_BASE_URL}/stock-analysis`, {
@@ -127,6 +131,37 @@ export async function analyzeStocks(selectedStocks = []) {
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || 'Failed to analyze stocks');
+  }
+
+  return await res.json();
+}
+
+
+// ============================================================
+// FETCH SINGLE STOCK ANALYSIS
+// ============================================================
+//
+// RiskAnalysisPage uses:
+// fetchStockAnalysis(stock)
+//
+// This sends the single stock name as:
+// { stock: "TCS" }
+//
+
+export async function fetchStockAnalysis(stock) {
+  const res = await fetch(`${API_BASE_URL}/stock-analysis`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      stock: stock
+    })
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to analyze selected stock');
   }
 
   return await res.json();
@@ -326,10 +361,19 @@ export function hashStr(str) {
 
   return hash;
 }
-// ============================================================
-// COMPATIBILITY EXPORTS FOR EXISTING PAGES
-// ============================================================
 
-export const fetchStockAnalysis = analyzeStocks;
+
+// ============================================================
+// COMPATIBILITY EXPORTS
+// ============================================================
+//
+// These aliases allow existing pages to continue working
+// without changing their imports.
+//
+
+export const uploadData = uploadCSVFile;
+
 export const fetchPortfolioAnalysis = analyzePortfolio;
+
 export const fetchCorrelation = getCorrelation;
+
